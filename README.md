@@ -1,4 +1,4 @@
-# Tumor_Seg
+# Deep learning techniques for Brain Tumor Segmentation
 
 Medical imaging is a key technology in medicine which makes non-invasively visible, what would otherwise remain hidden. It requires many years of training for radiologists and clinicians to recognize critical patterns in medical images to distinguish between healthy and pathological structures, to evaluate the development of treatment effects and plan image-based surgical procedures. Recently, quantitative medical imaging has started to leverage on developments in computer vision and deep learning. State-of-the-art models in deep learning can be applied across various fields in medical imaging, such as in the detection of brain abnormalities and cognitive computing. 
 
