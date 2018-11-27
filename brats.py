@@ -1,33 +1,3 @@
-"""
-Mask R-CNN
-Configurations and data loading code for MS COCO.
-
-Copyright (c) 2017 Matterport, Inc.
-Licensed under the MIT License (see LICENSE for details)
-Written by Waleed Abdulla
-
-------------------------------------------------------------
-
-Usage: import the module (see Jupyter notebooks for examples), or run from
-       the command line as such:
-
-    # Train a new model starting from pre-trained COCO weights
-    python brats.py train --dataset=/path/to/coco/ --model=coco
-
-    # Train a new model starting from ImageNet weights. Also auto download COCO dataset
-    python brats.py train --dataset=/path/to/coco/ --model=imagenet --download=True
-
-    # Continue training a model that you had trained earlier
-    python brats.py train --dataset=/path/to/coco/ --model=/path/to/weights.h5
-
-    # Continue training the last model you trained
-    python brats.py train --dataset=/path/to/coco/ --model=last
-
-    # Run COCO evaluatoin on the last model you trained
-    python brats.py evaluate --dataset=/path/to/coco/ --model=last
-"""
-
-
 import os
 import sys
 import numpy as np
@@ -76,7 +46,7 @@ class BratsConfig(Config):
     """
         
 
-    # Skip detections with < 90% confidence
+    # Skip detections with too little confidence
     DETECTION_MIN_CONFIDENCE = 0.5
 
     # Use small images for faster training. Set the limits of the small side
@@ -84,6 +54,7 @@ class BratsConfig(Config):
     IMAGE_MIN_DIM = 256
     IMAGE_MAX_DIM = 256
 
+    # Change the learning rate as you start several runs of training    
     LEARNING_RATE = 0.001
     
     
@@ -97,13 +68,12 @@ class BratsConfig(Config):
     TRAIN_ROIS_PER_IMAGE = 200
 
     
-    # Use a small epoch since the data is simple
+    #  Change as you start several runs of training 
     STEPS_PER_EPOCH = 50
 
-    
+    # Review performance of the ResNet50 and ResNet101 backbone 
     BACKBONE = "resnet101"
 
-    # use small validation steps since the epoch is small
     VALIDATION_STEPS = 10
 
 
@@ -149,7 +119,7 @@ class BratsDataset(utils.Dataset):
                 image = nib.load(info['path'] + "/" + path).get_data()[:,:,info['ind']]
                 break
         image = self.preprocess_image(image)
-        #checking if image is 3 layers deeps (for RBB or flair, t2, t1c?)
+        #checking if image is 3 layers deeps (for RGB or flair, t2, t1c?)
         if image.ndim != 3:
             image = image.astype(np.uint8)
             image = cv2.cvtColor(image,cv2.COLOR_GRAY2RGB)
@@ -324,10 +294,6 @@ class CombinedDataset(BratsDataset):
         a = []
         class_ids = []
         
-        """
-        here he reads the mask to establish a workable mask, a whole picture, but i don't get how. Pixelwise?
-        """
-        
         whole = self.getWholeMask(mask.copy())
         if np.count_nonzero(whole) > 0:
             class_ids.append(1)
@@ -379,12 +345,15 @@ def train(model):
     # *** This training schedule is an example. Update to your needs ***
     # Since we're using a very small dataset, and starting from
     # COCO trained weights, we don't need to train too long. Also,
-    # no need to train all layers, just the heads should do it.
+    # no need to train all layers: initially only retrain the heads and review the transferrability of the COCO weights.
+    # retrain more layers as you progress with training 
+       
     print("Training network heads")
     model.train(dataset_train, dataset_val,
                 learning_rate=config.LEARNING_RATE,
                 epochs=30,
                 layers='heads')
+       
     #if not enough results, change layers='heads'
     
     """
@@ -394,9 +363,9 @@ def train(model):
     config.display()
     
     #you need to make the HGG data folder into data_dir, val_dir and test_dir !!!
-    data_dir = "C:/Users/flohr/PythonProjects/MaskRCNN/Mask_RCNN/datasets/brats/HGG"
-    val_dir = "C:/Users/flohr/PythonProjects/MaskRCNN/Mask_RCNN/datasets/brats/HGG_Validation"
-    #test_dir = "C:/Users/flohr/PythonProjects/MaskRCNN/Mask_RCNN/datasets/brats/HGG_Testing"
+    data_dir = "C:/Users/nadja/PythonProjects/MaskRCNN/Mask_RCNN/datasets/brats/HGG"
+    val_dir = "C:/Users/nadja/PythonProjects/MaskRCNN/Mask_RCNN/datasets/brats/HGG_Validation"
+    #test_dir = "C:/Users/nadja/PythonProjects/MaskRCNN/Mask_RCNN/datasets/brats/HGG_Testing"
 
     
     dataset_train = FlairDataset()
